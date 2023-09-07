@@ -15,25 +15,26 @@ name: Build minotari text explorer docker image
   workflow_dispatch:
     inputs:
       TPBranch:
-        description: "Tari Project Branch"
+        description: 'Tari Project Branch'
         required: true
-        default: "development"
+        # default: 'development'
+        default: 'stagenet'
       version:
         type: string
         description: 'override image tag/version'
       tag_alias:
         type: string
         description: 'image tag alias'
-  # workflow_call:
-  #   secrets:
-  #     DOCKER_PROVIDER:
-  #       required: true
-  #     DOCKER_USERNAME:
-  #       required: true
-  #     DOCKER_PASSWORD:
-  #       required: true
-  #     DOCKER_REPO:
-  #       required: true
+  workflow_call:
+    secrets:
+      DOCKER_PROVIDER:
+        required: true
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+      DOCKER_REPO:
+        required: true
 
 env:
   TARI_REPO: tari-project/tari
