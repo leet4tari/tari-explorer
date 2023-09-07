@@ -17,8 +17,7 @@ name: Build minotari text explorer docker image
       TPBranch:
         description: 'Tari Project Branch'
         required: true
-        # default: 'development'
-        default: 'stagenet'
+        default: 'development'
       version:
         type: string
         description: 'override image tag/version'
@@ -39,7 +38,7 @@ name: Build minotari text explorer docker image
 env:
   TARI_REPO: tari-project/tari
   # TARI_BRANCH: development
-  TARI_BRANCH: stagenet
+  # TARI_BRANCH: stagenet
   DOCKER_IMAGE: minotari_text_explorer
 
 concurrency:
@@ -83,8 +82,11 @@ jobs:
             ls -alht
             mkdir -p tari-explorer/external_libs
             cp -vr tari-project-tari/clients/nodejs/base_node_grpc_client tari-explorer/external_libs/
-            cp -vr tari-project-tari/applications/tari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
-            # cp -vr tari-project-tari/applications/minotari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
+            if [ "${{ env.TARI_BRANCH }}" == "stagenet" ] ; then
+              cp -vr tari-project-tari/applications/tari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
+            else
+              cp -vr tari-project-tari/applications/minotari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
+            fi
             ls -alhtR tari-explorer/external_libs
             TPBRANCH=$(git --git-dir tari-project-tari/.git branch --show-current)
             TPSHA_SHORT=$(git --git-dir tari-project-tari/.git rev-parse --short HEAD)
