@@ -68,8 +68,8 @@ jobs:
             ls -alht
             mkdir -p tari-explorer/external_libs
             cp -vr tari-project-tari/clients/nodejs/base_node_grpc_client tari-explorer/external_libs/
-            # mkdir -p tari-explorer/external_libs/base_node_grpc_client/proto
-            cp -vr tari-project-tari/applications/minotari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
+            cp -vr tari-project-tari/applications/tari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
+            # cp -vr tari-project-tari/applications/minotari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
             ls -alhtR tari-explorer/external_libs
             TPBRANCH=$(git --git-dir tari-project-tari/.git branch --show-current)
             TPSHA_SHORT=$(git --git-dir tari-project-tari/.git rev-parse --short HEAD)
