@@ -33,7 +33,8 @@ name: Build minotari text explorer docker image
 
 env:
   TARI_REPO: tari-project/tari
-  TARI_BRANCH: development
+  # TARI_BRANCH: development
+  TARI_BRANCH: stagenet
   DOCKER_IMAGE: minotari_text_explorer
 
 concurrency:
@@ -61,7 +62,7 @@ jobs:
           ref: ${{ env.TARI_BRANCH }}
           path: tari-project-tari
 
-      - name: Prep docker build environment 
+      - name: Prep docker build environment
         shell: bash
         run: |
             ls -alht
@@ -70,10 +71,13 @@ jobs:
             # mkdir -p tari-explorer/external_libs/base_node_grpc_client/proto
             cp -vr tari-project-tari/applications/minotari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
             ls -alhtR tari-explorer/external_libs
+            TPBRANCH=$(git --git-dir tari-project-tari/.git branch --show-current)
+            TPSHA_SHORT=$(git --git-dir tari-project-tari/.git rev-parse --short HEAD)
+            TPVERSION="${TPBRANCH}_${TPSHA_SHORT}"
+            TEBRANCH=$(git --git-dir tari-explorer/.git branch --show-current)
+            TESHA_SHORT=$(git --git-dir tari-explorer/.git rev-parse --short HEAD)
             if [ -z "${{ inputs.version }}" ] ; then
-              VBRANCH=$(git --git-dir tari-explorer/.git branch --show-current)
-              VSHA_SHORT=$(git --git-dir tari-explorer/.git rev-parse --short HEAD)
-              VERSION="${VBRANCH}_$(date -u '+%Y%m%d')_${VSHA_SHORT}"
+              VERSION="${TEBRANCH}_$(date -u '+%Y%m%d')_${TESHA_SHORT}_${TPVERSION}"
             else
               VERSION=${{ inputs.version }}
             fi
@@ -95,17 +99,25 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
+            name/${{ env.DOCKER_IMAGE }}
             #name/${{ github.repository }}
             #ghcr.io/${{ github.repository }}
             #ghcr.io/${{ github.repository_owner }}/${{ github.repository }}
             #ghcr.io/${{ github.repository_owner }}
             ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE }}
+            ${{ secrets.DOCKER_PROVIDER }}/${{ secrets.DOCKER_REPO }}/${{ env.DOCKER_IMAGE }}
           tags: |
+            type=schedule
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha
+          labels: |
+            maintainer=${{ github.actor }} quay.expires-after=60d
+            #org.opencontainers.image.title=MyCustomTitle
+            org.opencontainers.image.description=Minotari Text Explorer
+            org.opencontainers.image.vendor=TariLabs
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
@@ -135,13 +147,16 @@ jobs:
           provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VERSION=${{ env.VERSION }}
           tags: |
             ${{ steps.meta.outputs.tags }}
             ${{ secrets.DOCKER_PROVIDER }}/${{ secrets.DOCKER_REPO }}/${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
             ${{ env.TAG_ALIAS }}
-          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
+
+      - name: Image labels
+        run: echo ${{ steps.meta.outputs.labels }}
