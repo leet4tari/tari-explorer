@@ -101,8 +101,13 @@ jobs:
           sparse-checkout: |
             clients/nodejs/base_node_grpc_client/src/index.js
           sparse-checkout-cone-mode: false
-          fetch-depth: 1
-          path: tari-explorer/external_libs/base_node_grpc_client/src/
+          path: tari-project-tari
+
+      - name: Hack - Copy over base_node_grpc_client/src/index.js
+        shell: bash
+        run: |
+            ls -alht
+            cp -fv tari-project-tari/clients/nodejs/base_node_grpc_client/src/index.js tari-explorer/external_libs/base_node_grpc_client/src
 
       - name: Debug - Post
         shell: bash
