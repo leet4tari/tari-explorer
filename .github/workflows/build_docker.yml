@@ -14,22 +14,26 @@ name: Build minotari text explorer docker image
     - cron: '05 00 * * *'
   workflow_dispatch:
     inputs:
+      TPBranch:
+        description: "Tari Project Branch"
+        required: true
+        default: "development"
       version:
         type: string
         description: 'override image tag/version'
       tag_alias:
         type: string
         description: 'image tag alias'
-  workflow_call:
-    secrets:
-      DOCKER_PROVIDER:
-        required: true
-      DOCKER_USERNAME:
-        required: true
-      DOCKER_PASSWORD:
-        required: true
-      DOCKER_REPO:
-        required: true
+  # workflow_call:
+  #   secrets:
+  #     DOCKER_PROVIDER:
+  #       required: true
+  #     DOCKER_USERNAME:
+  #       required: true
+  #     DOCKER_PASSWORD:
+  #       required: true
+  #     DOCKER_REPO:
+  #       required: true
 
 env:
   TARI_REPO: tari-project/tari
@@ -54,6 +58,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: tari-explorer
+
+      - name: Prep for branch
+        shell: bash
+        run: |
+          if [ -z "${{ inputs.TPBranch }}" ] ; then
+            echo "TARI_BRANCH=development" >> $GITHUB_ENV
+          else
+            echo "Setting Tari Branch as ${{ inputs.TPBranch }}"
+            echo "TARI_BRANCH=${{ inputs.TPBranch }}" >> $GITHUB_ENV
+          fi
 
       - name: Checkout tari
         uses: actions/checkout@v4
@@ -94,6 +108,7 @@ jobs:
             ls -alht tari-explorer/external_libs/base_node_grpc_client/src/
 
       - name: Hack - Checkout base_node_grpc_client/src/index.js
+        if: ${{ inputs.TPBranch != 'development' }}
         uses: actions/checkout@v4
         with:
           repository: ${{ env.TARI_REPO }}
@@ -108,6 +123,7 @@ jobs:
         run: |
             ls -alht
             cp -fv tari-project-tari/clients/nodejs/base_node_grpc_client/src/index.js tari-explorer/external_libs/base_node_grpc_client/src
+            head -n15 tari-explorer/external_libs/base_node_grpc_client/src/index.js
 
       - name: Debug - Post
         shell: bash
