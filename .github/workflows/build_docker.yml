@@ -88,6 +88,25 @@ jobs:
               echo "TAG_ALIAS=${{ secrets.DOCKER_PROVIDER }}/${{ secrets.DOCKER_REPO }}/${{ env.DOCKER_IMAGE }}:${{ inputs.tag_alias }}" >> $GITHUB_ENV
             fi
 
+      - name: Debug - Prep
+        shell: bash
+        run: |
+            ls -alht tari-explorer/external_libs/base_node_grpc_client/src/
+
+      - name: Hack - Checkout base_node_grpc_client/src/index.js
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TARI_REPO }}
+          ref: development
+          sparse-checkout: |
+            clients/nodejs/base_node_grpc_client/src/index.js
+          path: tari-explorer/external_libs/base_node_grpc_client/src/
+
+      - name: Debug - Post
+        shell: bash
+        run: |
+            ls -alht tari-explorer/external_libs/base_node_grpc_client/src/
+
       - name: Set up QEMU for Docker
         uses: docker/setup-qemu-action@v2
 
@@ -114,7 +133,8 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha
           labels: |
-            maintainer=${{ github.actor }} quay.expires-after=60d
+            maintainer=${{ github.actor }}
+            quay.expires-after=60d
             #org.opencontainers.image.title=MyCustomTitle
             org.opencontainers.image.description=Minotari Text Explorer
             org.opencontainers.image.vendor=TariLabs
