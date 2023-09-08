@@ -8,10 +8,11 @@ name: Build minotari text explorer docker image
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]*'
     branches:
+      - 'main'
       # - 'build_dockers*'
       - 'build-*'
   schedule:
-    - cron: '05 00 * * *'
+    - cron: '30 00 * * 0'  # Sunday 00h30
   workflow_dispatch:
     inputs:
       TPBranch:
@@ -37,8 +38,6 @@ name: Build minotari text explorer docker image
 
 env:
   TARI_REPO: tari-project/tari
-  # TARI_BRANCH: development
-  # TARI_BRANCH: stagenet
   DOCKER_IMAGE: minotari_text_explorer
 
 concurrency:
@@ -68,6 +67,11 @@ jobs:
             echo "Setting Tari Branch as ${{ inputs.TPBranch }}"
             echo "TARI_BRANCH=${{ inputs.TPBranch }}" >> $GITHUB_ENV
           fi
+
+      - name: Scheduled Overrides
+        if: ${{ github.event_name == 'schedule' && github.event.schedule == '30 00 * * 0' }}
+        run: |
+          echo "IMG_LABELS='quay.expires-after=60d'" >> $GITHUB_ENV
 
       - name: Checkout tari
         uses: actions/checkout@v4
@@ -144,18 +148,19 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE }}
             ${{ secrets.DOCKER_PROVIDER }}/${{ secrets.DOCKER_REPO }}/${{ env.DOCKER_IMAGE }}
           tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
+            type=schedule,pattern=weekly
+            # type=semver,pattern={{version}}
+            # type=semver,pattern={{major}}.{{minor}}
+            # type=semver,pattern={{major}}
+            # type=ref,event=branch
+            # type=ref,event=pr
+            # type=sha
           labels: |
-            maintainer=${{ github.actor }}
-            quay.expires-after=60d
+            #maintainer=${{ github.actor }}
             #org.opencontainers.image.title=MyCustomTitle
             org.opencontainers.image.description=Minotari Text Explorer
             org.opencontainers.image.vendor=TariLabs
+            ${{ env.IMG_LABELS }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
