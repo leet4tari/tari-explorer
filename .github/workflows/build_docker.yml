@@ -82,12 +82,13 @@ jobs:
             ls -alht
             mkdir -p tari-explorer/external_libs
             cp -vr tari-project-tari/clients/nodejs/base_node_grpc_client tari-explorer/external_libs/
-            if [ "${{ env.TARI_BRANCH }}" == "stagenet" ] ; then
+            if [ -d "tari-project-tari/applications/tari_app_grpc" ] ; then
+              echo "Found older tari"
               cp -vr tari-project-tari/applications/tari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
             else
+              echo "Copy minotari grpc proto"
               cp -vr tari-project-tari/applications/minotari_app_grpc/proto tari-explorer/external_libs/base_node_grpc_client/
             fi
-            ls -alhtR tari-explorer/external_libs
             TPBRANCH=$(git --git-dir tari-project-tari/.git branch --show-current)
             TPSHA_SHORT=$(git --git-dir tari-project-tari/.git rev-parse --short HEAD)
             TPVERSION="${TPBRANCH}_${TPSHA_SHORT}"
@@ -105,11 +106,6 @@ jobs:
               echo "TAG_ALIAS=${{ secrets.DOCKER_PROVIDER }}/${{ secrets.DOCKER_REPO }}/${{ env.DOCKER_IMAGE }}:${{ inputs.tag_alias }}" >> $GITHUB_ENV
             fi
 
-      - name: Debug - Prep
-        shell: bash
-        run: |
-            ls -alht tari-explorer/external_libs/base_node_grpc_client/src/
-
       - name: Hack - Checkout base_node_grpc_client/src/index.js
         if: ${{ inputs.TPBranch != 'development' }}
         uses: actions/checkout@v4
@@ -122,16 +118,12 @@ jobs:
           path: tari-project-tari
 
       - name: Hack - Copy over base_node_grpc_client/src/index.js
+        if: ${{ inputs.TPBranch != 'development' }}
         shell: bash
         run: |
             ls -alht
             cp -fv tari-project-tari/clients/nodejs/base_node_grpc_client/src/index.js tari-explorer/external_libs/base_node_grpc_client/src
             head -n15 tari-explorer/external_libs/base_node_grpc_client/src/index.js
-
-      - name: Debug - Post
-        shell: bash
-        run: |
-            ls -alht tari-explorer/external_libs/base_node_grpc_client/src/
 
       - name: Set up QEMU for Docker
         uses: docker/setup-qemu-action@v2
