@@ -149,6 +149,7 @@ jobs:
             ${{ secrets.DOCKER_PROVIDER }}/${{ secrets.DOCKER_REPO }}/${{ env.DOCKER_IMAGE }}
           tags: |
             type=schedule,pattern=weekly
+            type=ref,event=branch
             # type=semver,pattern={{version}}
             # type=semver,pattern={{major}}.{{minor}}
             # type=semver,pattern={{major}}
