@@ -107,7 +107,7 @@ jobs:
             fi
 
       - name: Hack - Checkout base_node_grpc_client/src/index.js
-        if: ${{ inputs.TPBranch != 'development' }}
+        if: ${{ env.TARI_BRANCH != 'development' }}
         uses: actions/checkout@v4
         with:
           repository: ${{ env.TARI_REPO }}
@@ -118,7 +118,7 @@ jobs:
           path: tari-project-tari
 
       - name: Hack - Copy over base_node_grpc_client/src/index.js
-        if: ${{ inputs.TPBranch != 'development' }}
+        if: ${{ env.TARI_BRANCH != 'development' }}
         shell: bash
         run: |
             ls -alht
