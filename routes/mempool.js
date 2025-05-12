@@ -4,6 +4,7 @@
 import express from "express";
 import { createClient } from "../baseNodeClient.js";
 import cacheSettings from "../cacheSettings.js";
+import cache from "../cache.js";
 const router = express.Router();
 
 /* GET mempool page. */

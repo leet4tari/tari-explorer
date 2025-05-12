@@ -22,6 +22,7 @@
 
 import express from "express";
 import { createClient } from "../baseNodeClient.js";
+import cacheSettings from "../cacheSettings.js";
 import cache from "../cache.js";
 import { miningStats } from "../utils/stats.js";
 const router = express.Router();
@@ -29,6 +30,7 @@ const router = express.Router();
 const NUM_BLOCKS = 100;
 
 router.get("/", async function (req, res) {
+  res.setHeader("Cache-Control", cacheSettings.index);
   const client = createClient();
   const tipInfo = await client.getTipInfo({});
 
